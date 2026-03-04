@@ -16,10 +16,10 @@
 
 title: Open Coding 
 description: "Class of 2026"
-owner_name: John Mortensen
-github_username: jm1021 
-github_repo: "portfolio" 
-baseurl: "/portfolio" 
+owner_name: Ishan Jha
+github_username: Jupiterian 
+github_repo: "CSSE2-Portfolio" 
+baseurl: "/CSSE2-portfolio" 
 future: true
 
 # Build settings
