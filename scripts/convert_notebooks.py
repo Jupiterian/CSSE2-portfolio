@@ -77,65 +77,98 @@ UI_RUNNER_PATTERN = r'^<!--\s*UI_RUNNER:\s*(.+)\s*-->$'
 # GAME_RUNNER pattern for GameEngine cells (JavaScript only)
 GAME_RUNNER_PATTERN = r'^//\s*GAME_RUNNER:\s*(.+)$'
 
-def error_cleanup(notebook_file):
-    destination_file = os.path.basename(notebook_file).replace(".ipynb", "_IPYNB_2_.md")
-    destination_path = os.path.join(destination_directory, destination_file)
 
-    if os.path.exists(destination_path):
-        os.remove(destination_path)
-
-
-def extract_front_matter(notebook_file, cell):
-    front_matter = {}
-    source = cell.get("source", "")
-
-    if source.startswith("---"):
-        try:
-            front_matter = yaml.safe_load(source.split("---", 2)[1])
-        except yaml.YAMLError as e:
-            print(f"Error parsing YAML front matter: {e}")
-            error_cleanup(notebook_file)
-            sys.exit(1)
-    return front_matter
-
-
-def get_relative_output_path(notebook_file):
-    relative_path = os.path.relpath(notebook_file, notebook_directory)
-
-    markdown_filename = relative_path.replace(".ipynb", "_IPYNB_2_.md")
-
-    return os.path.join(destination_directory, markdown_filename)
-
+#########################################
+### Section for Core Helper Functions ###
+#########################################
 
 def ensure_directory_exists(path):
+    """Ensure the destination directory exists before writing output files."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
 
-def fix_js_code_blocks(markdown):
-    # This regex finds ```python blocks starting with %%js and replaces with ```javascript
-    # but keeps the %%js line for developers to see
-    pattern = re.compile(r"```python\n%%js\n", re.MULTILINE)
-    markdown = pattern.sub("```javascript\n%%js\n", markdown)
-    # Optionally, handle blocks with no newline after %%js
-    pattern2 = re.compile(r"```python\r?\n%%js\r?\n", re.MULTILINE)
-    markdown = pattern2.sub("```javascript\n%%js\n", markdown)
-    return markdown
+def generate_runner_id(permalink, index):
+    """Generate runner_id from permalink"""
+    # Convert /javascript/json/lesson to javascript-json-lesson-0
+    clean_permalink = permalink.strip('/').replace('/', '-')
+    return f"{clean_permalink}-{index}"
 
 
-def extract_code_runner_metadata(cell_source, language):
-    """Extract CODE_RUNNER challenge from cell comments"""
-    if language not in CODE_RUNNER_PATTERNS:
+def detect_cell_language(cell):
+    """Detect the programming language of a code cell"""
+    source = cell.get('source', '')
+    lines = source.split('\n')
+
+    # JavaScript: first line is %%js magic command
+    if lines and lines[0].strip().startswith('%%js'):
+        return 'javascript'
+
+    # Java: last non-whitespace line matches ClassName.main(null);
+    # Find last non-empty line
+    last_line = ''
+    for line in reversed(lines):
+        if line.strip():
+            last_line = line.strip()
+            break
+    if re.match(r'^\w+\.main\s*\(\s*null\s*\)\s*;?\s*$', last_line):
+        return 'java'
+
+    # Default to python
+    return 'python'
+
+
+def get_custom_cell_id(cell) -> str:
+    """Get the precomputed custom cell ID from metadata."""
+    return cell.get('metadata', {}).get('custom_cell', {}).get('id', '')
+
+
+#################################
+### Section for Object Models ###
+#################################
+
+@dataclass
+class CodeRunner:
+    challenge: str
+    language: str
+    runner_id: str
+    code: str
+    options: dict[str, Any]
+    custom_cell_id: str
+
+    @staticmethod
+    def extract_challenge_and_options(cell_source: str, language: str) -> Optional[tuple[str, dict[str, Any]]]:
+        """Parse CODE_RUNNER challenge text and optional key/value options."""
+        if language not in CODE_RUNNER_PATTERNS:
+            return None
+
+        pattern = CODE_RUNNER_PATTERNS[language]
+        for line in cell_source.split('\n'):
+            match = re.match(pattern, line.strip(), re.IGNORECASE)
+            if not match:
+                continue
+
+            content = match.group(1).strip()
+            if '|' not in content:
+                return (content, {})
+
+            challenge, options_str = content.split('|', 1)
+            options: dict[str, Any] = {}
+            for option in options_str.strip().split(','):
+                if ':' not in option:
+                    continue
+                key, value = option.split(':', 1)
+                key = key.strip()
+                value = value.strip().lower()
+                if value == 'true':
+                    options[key] = True
+                elif value == 'false':
+                    options[key] = False
+                else:
+                    options[key] = value
+
+            return (challenge.strip(), options)
+
         return None
-    
-    pattern = CODE_RUNNER_PATTERNS[language]
-    lines = cell_source.split('\n')
-    
-    for line in lines:
-        match = re.match(pattern, line.strip(), re.IGNORECASE)
-        if match:
-            return match.group(1).strip()
-    
-    return None
 
     @staticmethod
     def extract_challenge(cell_source: str, language: str) -> Optional[str]:
@@ -176,77 +209,165 @@ def extract_code_runner_metadata(cell_source, language):
             result = result[1:]
         return result
 
+    @classmethod
+    def from_cell(cls, cell, permalink: str, runner_index: int) -> Optional["CodeRunner"]:
+        """Build a CodeRunner instance when the cell includes a CODE_RUNNER marker."""
+        language = detect_cell_language(cell)
+        parsed = cls.extract_challenge_and_options(cell.source, language)
+        if not parsed:
+            return None
 
-def generate_runner_id(permalink, index):
-    """Generate runner_id from permalink"""
-    # Convert /javascript/json/lesson to javascript-json-lesson-0
-    clean_permalink = permalink.strip('/').replace('/', '-')
-    return f"{clean_permalink}-{index}"
+        challenge, options = parsed
+
+        return cls(
+            challenge=challenge,
+            language=language,
+            runner_id=generate_runner_id(permalink, runner_index),
+            code=cls.clean_code(cell.source, language),
+            options=options,
+            custom_cell_id=get_custom_cell_id(cell),
+        )
+
+    def to_metadata(self) -> dict[str, Any]:
+        """Serialize runner data for notebook cell metadata storage."""
+        return asdict(self)
+
+    @classmethod
+    def from_metadata(cls, metadata: dict[str, Any]) -> "CodeRunner":
+        """Rehydrate a CodeRunner from previously stored metadata."""
+        return cls(
+            challenge=metadata['challenge'],
+            language=metadata['language'],
+            runner_id=metadata['runner_id'],
+            code=metadata['code'],
+            options=metadata.get('options', {}),
+            custom_cell_id=metadata.get('custom_cell_id', ''),
+        )
+
+    def liquid_lines(self, code_fence_lines: list[str], code_runner_count: int) -> list[str]:
+        """Render Jekyll Liquid captures/includes for embedding the code runner widget."""
+        return [
+            '',
+            '{% capture challenge' + str(code_runner_count) + ' %}',
+            self.challenge,
+            '{% endcapture %}',
+            '',
+            '{% capture code' + str(code_runner_count) + ' %}',
+            self.code,
+            '{% endcapture %}',
+            '',
+            '{% capture source' + str(code_runner_count) + ' %}',
+            *code_fence_lines,
+            '{% endcapture %}',
+            '',
+            '{% include runners/code.html',
+            '   runner_id="' + self.runner_id + '"',
+            '   language="' + self.language + '"',
+            '   challenge=challenge' + str(code_runner_count),
+            '   code=code' + str(code_runner_count),
+            '   source=source' + str(code_runner_count),
+            '%}',
+            '',
+        ]
 
 
-def detect_cell_language(cell):
-    """Detect the programming language of a code cell"""
-    source = cell.get('source', '')
-    lines = source.split('\n')
-    
-    # JavaScript: first line is %%js magic command
-    if lines and lines[0].strip().startswith('%%js'):
-        return 'javascript'
-    
-    # Java: last non-whitespace line matches ClassName.main(null);
-    # Find last non-empty line
-    last_line = ''
-    for line in reversed(lines):
-        if line.strip():
-            last_line = line.strip()
-            break
-    if re.match(r'^\w+\.main\s*\(\s*null\s*\)\s*;?\s*$', last_line):
-        return 'java'
-    
-    # Default to python
-    return 'python'
+@dataclass
+class UiRunner:
+    description: str
+    runner_id: str
+    html: str
+    script: str
+    options: dict[str, Any]
+    custom_cell_id: str
 
+    @staticmethod
+    def extract_description_and_options(cell_source: str) -> Optional[tuple[str, dict[str, Any]]]:
+        """Parse UI_RUNNER description text and optional key/value options."""
+        for line in cell_source.split('\n'):
+            match = re.match(UI_RUNNER_PATTERN, line.strip(), re.IGNORECASE)
+            if not match:
+                continue
 
-def process_code_runner_cells(notebook, permalink):
-    """Process notebook cells and add code-runner metadata"""
-    runner_index = 0
-    processed_cells = []
-    
-    for cell in notebook.cells:
-        if cell.cell_type == 'code':
-            language = detect_cell_language(cell)
-            challenge = extract_code_runner_metadata(cell.source, language)
-            
-            if challenge:
-                # Store metadata for later use
-                cell['metadata']['code_runner'] = {
-                    'challenge': challenge,
-                    'language': language,
-                    'runner_id': generate_runner_id(permalink, runner_index),
-                    'code': clean_code_for_runner(cell.source, language)
-                }
-                runner_index += 1
-                
-                # Clear outputs for cells with code-runner (outputs are redundant)
-                cell['outputs'] = []
-                cell['execution_count'] = None
-        
-        processed_cells.append(cell)
-    
-    notebook.cells = processed_cells
-    return notebook
+            content = match.group(1).strip()
+            if '|' not in content:
+                return (content, {})
 
+            description, options_str = content.split('|', 1)
+            options: dict[str, Any] = {}
+            for option in options_str.strip().split(','):
+                if ':' not in option:
+                    continue
+                key, value = option.split(':', 1)
+                key = key.strip()
+                value = value.strip().lower()
+                if value == 'true':
+                    options[key] = True
+                elif value == 'false':
+                    options[key] = False
+                else:
+                    options[key] = value
 
-def extract_ui_runner_metadata(cell_source):
-    """Extract UI_RUNNER description from HTML cell comments"""
-    lines = cell_source.split('\n')
-    
-    for line in lines:
-        match = re.match(UI_RUNNER_PATTERN, line.strip(), re.IGNORECASE)
-        if match:
-            return match.group(1).strip()
-    
-    return None
+            return (description.strip(), options)
+
+        return None
+
+    @staticmethod
+    def extract_description(cell_source: str) -> Optional[str]:
+        """Extract only the UI_RUNNER description directive from the cell source."""
+        parsed = UiRunner.extract_description_and_options(cell_source)
+        if parsed:
+            return parsed[0]
+        return None
+
+    @staticmethod
+    def clean_html_and_script(
+        cell_source: str,
+        runner_index: int,
+        namespace_ids: bool = False,
+    ) -> tuple[str, str]:
+        """Split HTML/script content and optionally namespace element IDs."""
+        lines = cell_source.split('\n')
+        in_script = False
+        html_lines = []
+        script_lines = []
+
+        for line in lines:
+            if line.strip().startswith('%%html'):
+                continue
+            if re.match(UI_RUNNER_PATTERN, line.strip(), re.IGNORECASE):
+                continue
+            if '<script>' in line:
+                in_script = True
+                continue
+            if '</script>' in line:
+                in_script = False
+                continue
+
+            if in_script:
+                script_lines.append(line)
+            else:
+                html_lines.append(line)
+
+        html_str = '\n'.join(html_lines)
+        script_str = '\n'.join(script_lines)
+
+        if namespace_ids:
+            unique_suffix = f"-ui{runner_index}"
+            ids_found = re.findall(r'id="([^"]+)"', html_str)
+            for old_id in ids_found:
+                new_id = old_id + unique_suffix
+                html_str = html_str.replace(f'id="{old_id}"', f'id="{new_id}"')
+                script_str = script_str.replace(f"getElementById('{old_id}')", f"getElementById('{new_id}')")
+                script_str = script_str.replace(f'getElementById("{old_id}")', f'getElementById("{new_id}")')
+
+        return html_str, script_str
+
+    @classmethod
+    def from_cell(cls, cell, permalink: str, runner_index: int) -> Optional["UiRunner"]:
+        """Build a UiRunner instance when the cell includes a UI_RUNNER directive."""
+        parsed = cls.extract_description_and_options(cell.source)
+        if not parsed:
+            return None
 
         description, options = parsed
 
