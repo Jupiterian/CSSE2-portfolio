@@ -19,7 +19,7 @@ description: "Class of 2026"
 owner_name: Ishan Jha
 github_username: Jupiterian 
 github_repo: "CSSE2-Portfolio" 
-baseurl: "/" 
+baseurl: "" 
 future: true
 
 # Build settings
