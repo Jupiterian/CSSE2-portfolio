@@ -80,6 +80,9 @@ Hi! My name is [Your Full Name]
     <a href="{{site.baseurl}}/cs-pathway" class="btn" style="background-color: var(--orange);">
        CS Pathway
     </a>
+    <a href="{{site.baseurl}}/sprint6-peppa-pig" class="btn" style="background-color: var(--orange);">
+       College Ready stuff
+    </a>
 </div>
 
 <br>
