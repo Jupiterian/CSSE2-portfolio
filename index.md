@@ -80,8 +80,32 @@ Hi! My name is [Your Full Name]
     <a href="{{site.baseurl}}/cs-pathway" class="btn" style="background-color: var(--orange);">
        CS Pathway
     </a>
-    <a href="{{site.baseurl}}/sprint6-peppa-pig" class="btn" style="background-color: var(--orange);">
-       College Ready stuff
+</div>
+
+<br>
+
+### College Ready
+
+> Demonstration of CSSE Sprint 6 College Ready Objectives.
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <a href="{{site.baseurl}}/sprint6-oop-skills" class="btn" style="background-color: var(--teal);">
+       OOP & Inheritance
+    </a>
+    <a href="{{site.baseurl}}/sprint6-control-structures" class="btn" style="background-color: var(--blue);">
+       Control Structures & Data
+    </a>
+    <a href="{{site.baseurl}}/sprint6-operators-skills" class="btn" style="background-color: var(--green);">
+       Operators & Math
+    </a>
+    <a href="{{site.baseurl}}/sprint6-io-api-skills" class="btn" style="background-color: var(--warn);">
+       I/O & APIs
+    </a>
+    <a href="{{site.baseurl}}/sprint6-game-runner-skills" class="btn" style="background-color: var(--orange);">
+       Game Runner Integration
+    </a>
+    <a href="{{site.baseurl}}/sprint6-debugging-testing" class="btn" style="background-color: var(--red);">
+       Debugging & Testing
     </a>
 </div>
 
