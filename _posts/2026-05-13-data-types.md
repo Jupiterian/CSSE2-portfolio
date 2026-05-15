@@ -6,6 +6,11 @@ description: Data Types (Numbers, Strings, Booleans, Arrays, JSON Objects)
 permalink: /sprint6-data-types
 ---
 
+## Table of Contents
+* TOC
+{:toc}
+
+
 ## 3. Data Types
 
 ### Numbers

@@ -6,6 +6,11 @@ description: Using Console, Source-Level, Network, Application tabs, API Errors
 permalink: /sprint6-debugging-testing
 ---
 
+## Table of Contents
+* TOC
+{:toc}
+
+
 ## 7. Debugging & Testing
 
 ### Console Debugging

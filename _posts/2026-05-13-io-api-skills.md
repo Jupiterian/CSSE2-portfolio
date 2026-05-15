@@ -6,6 +6,11 @@ description: Keyboard Inputs, GameEnv Configuration, API Integration, Asynchrono
 permalink: /sprint6-io-api-skills
 ---
 
+## Table of Contents
+* TOC
+{:toc}
+
+
 ## 5. Input/Output & APIs
 
 ### Keyboard Input

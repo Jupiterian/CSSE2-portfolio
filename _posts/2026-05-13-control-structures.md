@@ -6,6 +6,11 @@ description: Control Structures (Iteration, Conditionals, Nested Conditions)
 permalink: /sprint6-control-structures
 ---
 
+## Table of Contents
+* TOC
+{:toc}
+
+
 ## 2. Control Structures
 
 ### Iteration

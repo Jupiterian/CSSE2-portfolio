@@ -6,6 +6,11 @@ description: Object-Oriented Programming (Classes, Methods, Instantiation, Inher
 permalink: /sprint6-oop-skills
 ---
 
+## Table of Contents
+* TOC
+{:toc}
+
+
 ## 1. Object-Oriented Programming
 
 Our game architecture heavily utilizes OOP to structure characters, platforms, and game levels. Each required OOP skill is distinctly implemented below via its own code block.

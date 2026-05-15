@@ -6,6 +6,11 @@ description: Final Level Deployments utilizing GameRunner Notebook integrations.
 permalink: /sprint6-game-runner-skills
 ---
 
+## Table of Contents
+* TOC
+{:toc}
+
+
 ## 6. Complete Playable Custom Level (Game Runner Integration)
 This covers deploying the full code suite inside the markdown architecture by referencing our imported Object files using ES6 modules.
 

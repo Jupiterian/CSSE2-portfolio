@@ -6,6 +6,11 @@ description: Mathematical Equations, String Concatenation, Boolean Expressions
 permalink: /sprint6-operators-skills
 ---
 
+## Table of Contents
+* TOC
+{:toc}
+
+
 ## 4. Operators
 
 ### Mathematical
