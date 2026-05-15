@@ -93,7 +93,10 @@ Hi! My name is [Your Full Name]
        OOP & Inheritance
     </a>
     <a href="{{site.baseurl}}/sprint6-control-structures" class="btn" style="background-color: var(--blue);">
-       Control Structures & Data
+       Control Structures
+    </a>
+    <a href="{{site.baseurl}}/sprint6-data-types" class="btn" style="background-color: var(--green);">
+       Data Types
     </a>
     <a href="{{site.baseurl}}/sprint6-operators-skills" class="btn" style="background-color: var(--green);">
        Operators & Math

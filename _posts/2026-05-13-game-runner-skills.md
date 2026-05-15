@@ -1,43 +1,42 @@
 ---
 layout: post
 codemirror: true
-title: Sprint 6 Final Project Skills - Game Runner Integration
-description: GameEnv config, canvas rendering, key events
+title: Sprint 6 Final Project Skills - Game Runner Complete Setup
+description: Final Level Deployments utilizing GameRunner Notebook integrations. 
 permalink: /sprint6-game-runner-skills
 ---
 
-## 5. Game Runner Integration
-Pulling elements together dynamically via our `GameEnginev1.1` and `game-runner`. We specify `GameLevel` rules mapping Keyboard Keypress bounds and Background data parameters correctly.
+## 6. Complete Playable Custom Level (Game Runner Integration)
+This covers deploying the full code suite inside the markdown architecture by referencing our imported Object files using ES6 modules.
 
-**Skills Demonstrated:** 
-- Keyboard Input configurations via Object Literals (WASD etc.)
-- Canvas Rendering handling by `GameEnv` and Engine classes
-- Component instantiations directly attached to our runner array
+### Custom Level Data-Driven Design
+Using `GameSetup.js` and standard Configuration `Object Literals` mapping sprites to Game Layers. Connecting our assets directly to our custom engine architecture.
 
 {% capture game_challenge %}
-Launch a bare-bones implementation modeled on PeppaBattleLevelBase. Note this imports from the Engine standard directory logic using our player properties.
+Launch Level 1 utilizing the exact GameRunner script layout to initialize the canvas and inject the mapped Array of Classes into the global Environment loop.
 {% endcapture %}
 
 {% capture game_code %}
-// Direct import using GameEngine structure
+// Simulated ES6 Imports
 import GameControl from '/assets/js/GameEnginev1.1/essentials/GameControl.js';
 import GameEnvBackground from '/assets/js/GameEnginev1.1/essentials/GameEnvBackground.js';
 import Player from '/assets/js/GameEnginev1.1/essentials/Player.js';
+import Enemy from '/assets/js/GameEnginev1.1/essentials/Enemy.js';
 
 class CustomPeppaLevel {
   constructor(gameEnv) {
+    // GameEnv Configuration mapping parameters
     const path = gameEnv.path;
     const width = gameEnv.innerWidth;
     const height = gameEnv.innerHeight;
     
-    // Configurations mimicking our PeppaBattleLevelBase Level 1
+    // Object Literal definition mapping to the background
     const bgData = {
         name: 'peppa-lvl1-arena',
         src: path + "/images/projects/peppa-pig/peppa-pig-background.jpg",
         pixels: { height: 720, width: 1280 }
     };
     
-    // Player mapped with keys using WASD
     const playerData = {
       id: 'Ishan Player',
       src: path + "/images/projects/peppa-pig/ishan-jha.png",
@@ -49,10 +48,10 @@ class CustomPeppaLevel {
       orientation: { rows: 4, columns: 3 },
       down: { row: 0, start: 0, columns: 3 },
       hitbox: { widthPercentage: 0.45, heightPercentage: 0.2 },
-      keypress: { up: 87, left: 65, down: 83, right: 68 } 
+      keypress: { up: 87, left: 65, down: 83, right: 68 } // Keyboard Input Data
     };
 
-    // Linking instantiated Objects to our Canvas Environment array
+    // Instantiate game objects in GameLevel configuration Array
     this.classes = [
       { class: GameEnvBackground, data: bgData },
       { class: Player, data: playerData },
@@ -64,8 +63,4 @@ export { GameControl };
 export const gameLevelClasses = [CustomPeppaLevel];
 {% endcapture %}
 
-{% include runners/game.html 
-   runner_id="peppa_game1"
-   challenge=game_challenge
-   code=game_code
-%}
+{% include runners/game.html runner_id="peppa_game1" challenge=game_challenge code=game_code %}

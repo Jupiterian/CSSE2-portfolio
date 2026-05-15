@@ -2,58 +2,54 @@
 layout: post
 codemirror: true
 title: Sprint 6 Final Project Skills - Debugging & Testing
-description: Using Developer Tools, Console, Network Tab, API error handling
+description: Using Console, Source-Level, Network, Application tabs, API Errors
 permalink: /sprint6-debugging-testing
 ---
 
-## 6. Debugging & Testing
-Debugging is a critical component for identifying issues in Game State, Physics Engines, and APIs. We heavily utilize Chrome DevTools for validating interactions.
+## 7. Debugging & Testing
 
-**Skills Demonstrated:** 
-- Console Debugging (`console.log`)
-- Network Tab / API debugging
-- Element Inspection & Canvas troubleshooting
-- Try/Catch error catching for integrations
+### Console Debugging
+We trace memory using the console.
 
-{% capture debugging_challenge %}
-We simulate checking API responses and outputting manual trace logs to track state changes.
+{% capture dbg_console_chal %}Demonstrating Console Debugging hooks.{% endcapture %}
+{% capture dbg_console_code %}
+const traceMsg = "Player loaded into level 2";
+outputElement.innerHTML = "<p>Sending to JS Console -> <code>console.log('" + traceMsg + "');</code></p>";
 {% endcapture %}
+{% include runners/ui.html runner_id="dbg_console" challenge=dbg_console_chal code=dbg_console_code height="100px" %}
 
-{% capture debugging_code %}
-outputElement.innerHTML = '<h3>Console & Error Validation Log</h3>';
 
-function writeLog(message) {
-    const p = document.createElement('p');
-    p.style.fontFamily = "monospace";
-    p.textContent = "> " + message;
-    outputElement.appendChild(p);
-}
+### Application Debugging
+We securely examine local storage and cookies natively.
 
-writeLog("Initializing Game State...");
-let gameState = { players: 1, enemies: 5, active: true };
-writeLog("Game State: " + JSON.stringify(gameState));
-
-async function simulateNetworkCheck() {
-    writeLog("Starting Network API Validation Test...");
-    try {
-        // Attempt an invalid API request to demonstrate error handling
-        const req = await fetch('https://invalid.route.mock/api');
-        if (!req.ok) {
-            throw new Error(`HTTP Error: ${req.status}`);
-        }
-    } catch (e) {
-        writeLog("Network Request Failed (Expected): " + e.message);
-        writeLog("Check DevTools Network tab for CORS or missing route info.");
-    }
-}
-
-simulateNetworkCheck();
-
-writeLog("Use Chrome 'Elements' tab to inspect canvas and game overlays!");
+{% capture dbg_app_chal %}Demonstrating Application Debugging / LocalStorage.{% endcapture %}
+{% capture dbg_app_code %}
+localStorage.setItem('levelProgression', '3');
+const val = localStorage.getItem('levelProgression');
+outputElement.innerHTML = "<p>Inspecting LocalStorage for 'levelProgression': " + val + "</p>";
 {% endcapture %}
+{% include runners/ui.html runner_id="dbg_app" challenge=dbg_app_chal code=dbg_app_code height="100px" %}
 
-{% include runners/ui.html 
-   runner_id="debug_ui"
-   challenge=debugging_challenge
-   code=debugging_code
-%}
+
+### API Error Handling
+We deploy try/catch wrappers targeting fetches to prevent game crashes.
+
+{% capture dbg_err_handle_chal %}Demonstrating API Error Handling.{% endcapture %}
+{% capture dbg_err_handle_code %}
+try {
+    throw new Error("404 HTTP Fetch failure");
+} catch(e) {
+    outputElement.innerHTML = '<p style="color:red">Handled Exception: ' + e.message + '</p>';
+}
+{% endcapture %}
+{% include runners/ui.html runner_id="dbg_err_handle" challenge=dbg_err_handle_chal code=dbg_err_handle_code height="100px" %}
+
+
+### Hit Box Visualization & Network Debugging & Testing
+We manually instruct our GameLevel configuration to trace hitboxes by turning gameEnv.showHitboxes = true;. We use Network DevTools tab to check live routes for our game. (No execution required).
+
+{% capture dbg_visual_chal %}Tracing settings for tools.{% endcapture %}
+{% capture dbg_visual_code %}
+outputElement.innerHTML = "<p><i>Settings visually verify integrations using DevTools.</i></p>";
+{% endcapture %}
+{% include runners/ui.html runner_id="dbg_visual" challenge=dbg_visual_chal code=dbg_visual_code height="80px" %}

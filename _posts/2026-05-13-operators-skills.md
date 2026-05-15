@@ -6,47 +6,45 @@ description: Mathematical Equations, String Concatenation, Boolean Expressions
 permalink: /sprint6-operators-skills
 ---
 
-## 3. Operators & Mathematical Equations
-We calculate distances between the player and enemies through geometric distance evaluation.
+## 4. Operators
 
-**Skills Demonstrated:** 
-- Mathematical Operators (`+`, `-`, `/`, `Math.hypot`)
-- Boolean Expressions (`>`, `&&`, `||`, `!`)
-- String Operations (concatenation, literals)
+### Mathematical
+We calculate physics constraints such as velocities or collisions boundaries.
 
-{% capture ops_challenge %}
-We evaluate the distance from Peppa Boss to the Player using Mathematical functions mimicking our sprite collision detection logic.
+{% capture op_mathematical_chal %}Demonstrating Mathematical Operators.{% endcapture %}
+{% capture op_mathematical_code %}
+const grav = 9.8;
+let vY = -15; // Negative Y goes up
+vY += grav * 0.1; // Mathematical addition & multiplication
+outputElement.innerHTML = "<p>New Velocity: " + vY.toFixed(2) + "</p>";
 {% endcapture %}
+{% include runners/ui.html runner_id="op_mathematical" challenge=op_mathematical_chal code=op_mathematical_code height="120px" %}
 
-{% capture ops_code %}
-outputElement.innerHTML = '';
 
-// Data Types: Numbers and Strings in JSON Objects
-const boss = { x: 100, y: 150, name: "Peppa Boss" };
-const player = { x: 220, y: 300, name: "Ishan" };
+### String Operations
+We perform path building and dynamic HTML insertions via concatenations.
 
-// String operations 
-let titleText = boss.name + " vs " + player.name;
-outputElement.innerHTML += '<h3>' + titleText + '</h3>';
-
-// Mathematical Operators
-const dx = player.x - boss.x;
-const dy = player.y - boss.y;
-
-// Math evaluation: hypotenuse to find the distance
-const distance = Math.hypot(dx, dy);
-
-// Boolean execution with operators
-if (distance > 100 && distance < 400) {
-    outputElement.innerHTML += '<p>Boss is moving towards player! (Distance: ' + Math.floor(distance) + 'px)</p>';
-} else {
-    outputElement.innerHTML += '<p>Out of range.</p>';
-}
+{% capture op_string_ops_chal %}Demonstrating String Operations.{% endcapture %}
+{% capture op_string_ops_code %}
+const root = "/images/";
+const file = "player.png";
+// String Concatenation
+const fullPath = root + file;
+outputElement.innerHTML = "<p>Full Asset Path: <code>" + fullPath + "</code></p>";
 {% endcapture %}
+{% include runners/ui.html runner_id="op_string_ops" challenge=op_string_ops_chal code=op_string_ops_code height="120px" %}
 
-{% include runners/ui.html 
-   runner_id="ops1"
-   challenge=ops_challenge
-   code=ops_code
-   height="300px"
-%}
+
+### Boolean Expressions
+We check complex bounds evaluating true/false logic statements.
+
+{% capture op_boolean_expr_chal %}Demonstrating Boolean Expressions.{% endcapture %}
+{% capture op_boolean_expr_code %}
+const playerLeft = 50, enemyRight = 45;
+// Boolean evaluating 'Greater Than' operator
+const isColliding = playerLeft < enemyRight;
+// Logical NOT (!) operator
+const safe = !isColliding;
+outputElement.innerHTML = "<p>Is Safe: " + safe + "</p>";
+{% endcapture %}
+{% include runners/ui.html runner_id="op_boolean_expr" challenge=op_boolean_expr_chal code=op_boolean_expr_code height="120px" %}
